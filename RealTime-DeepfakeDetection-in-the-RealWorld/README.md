@@ -14,24 +14,24 @@ pip install -r requirements.txt
 ## Training
 To start a training LaDeDa on the raw GenImage dataset:
 ```bash
-python3 train.py --name LaDeDa --dataroot {PATH_TO_DATASET} --checkpoints_dir {./NAME_OF_CHECKPOINT} --batch_size 32 --lr 0.0002 \
---delr_freq 10 --base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {CLASS_MAP} --balance_train_classes --generator {train_set} \
---dataset classic --continue_train --epoch latest
+python3 train.py --name LaDeDa --dataroot {PATH_TO_DATASET} --checkpoints_dir {./NAME_OF_CHECKPOINT} --batch_size 32 \
+--lr 0.0002 --delr_freq 10 --base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {CLASS_MAP} --balance_train_classes \
+--generator {train_set} --dataset classic --continue_train --epoch latest
 ```
 
 To start a training only using JPEG(qf=96) images:
 ```bash
-python3 train.py --name LaDeDa --dataroot {PATH_TO_DATASET} --checkpoints_dir {./NAME_OF_CHECKPOINT} ---batch_size 32 --lr 0.0002 \
---delr_freq 10 --base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {PATH_TO_CLASS_MAP} --balance_train_classes \
---generator {train_set} --dataset jpeg96 --jpeg_qf 96 --continue_train --epoch latest
+python3 train.py --name LaDeDa --dataroot {PATH_TO_DATASET} --checkpoints_dir {./NAME_OF_CHECKPOINT} ---batch_size 32 \
+--lr 0.0002 --delr_freq 10 --base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {PATH_TO_CLASS_MAP} \
+--balance_train_classes --generator {train_set} --dataset jpeg96 --jpeg_qf 96 --continue_train --epoch latest
 ```
 
 To start a training only using JPEG(qf=96) images and including size constrain: 
 ```bash
-python3 train.py --name LaDeDa --dataroot {PATH_TO_DATASET} --checkpoints_dir {./NAME_OF_CHECKPOINT} ---batch_size 32 --lr 0.0002 \
---delr_freq 10 --base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {PATH_TO_CLASS_MAP} --balance_train_classes \
---generator {train_set} --dataset size_constrained --min_size {lower_bound} --max_size {upper_bound} --cropsize {lower_bound} --jpeg_qf 96 \
---continue_train --epoch latest
+python3 train.py --name LaDeDa --dataroot {PATH_TO_DATASET} --checkpoints_dir {./NAME_OF_CHECKPOINT} ---batch_size 32 \
+--lr 0.0002 --delr_freq 10 --base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {PATH_TO_CLASS_MAP} \
+--balance_train_classes --generator {train_set} --dataset size_constrained --min_size {lower_bound} --max_size {upper_bound} \
+--cropsize {lower_bound} --jpeg_qf 96 --continue_train --epoch latest
 ```
 
 NOTE:
@@ -42,8 +42,8 @@ NOTE:
 Example of Cross-Generator-Validation for LaDeDa: 
 ```bash
 python3 test.py --dataroot {DATAROOT} --checkpoints_dir {PATH_TO_CHECKPOINT.pth} --model LaDeDa \
---base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {PATH_TO_CLASS_MAP} --is_validating --generator {eval_set} \
---dataset classic --result_path {filename} --jpeg_qf {qf} --resize {size} --cropsize {size}
+--base_path {BASE_PATH} --csv_data_path {CSV_PATH} --class-map {PATH_TO_CLASS_MAP} --is_validating \
+--generator {eval_set} --dataset classic --result_path {filename} --jpeg_qf {qf} --resize {size} --cropsize {size}
 ```
 
 NOTE: 
