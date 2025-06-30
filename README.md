@@ -29,17 +29,17 @@ Training commands, configuration files, and detector logic remain largely aligne
 ### ResNet50
 
 <p align="center">
-  <img src="results/results_resnet.png" width="80%" />
+  <img src="results/resnet_constrained.png" width="80%" />
   <br>
-  <em>Cross-Generator Performance when training ResNet50 on constrained dataset</em>
+  <em>Reproduced: Cross-Generator Performance when training ResNet50 on constrained dataset</em>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="results/results_resnet_diff.png" width="80%" />
+  <img src="results/resnet_constrained_diff_classic.png" width="80%" />
   <br>
-  <em>Difference to when training on raw dataset</em>
+  <em>Reproduced: Difference to when training on raw dataset</em>
 </p>
 
 <br><br>
@@ -47,15 +47,33 @@ Training commands, configuration files, and detector logic remain largely aligne
 ### Swin-T
 
 <p align="center">
-  <img src="results/results_swin.png" width="80%" />
+  <img src="results/swin_constrained.png" width="80%" />
   <br>
-  <em>Cross-Generator Performance when training Swin-T on constrained dataset</em>
+  <em>Reproduced: Cross-Generator Performance when training Swin-T on constrained dataset</em>
 </p>
 
 <br>
 
 <p align="center">
-  <img src="results/results_swin_diff.png" width="80%" />
+  <img src="results/swin_constrained_diff_classic.png" width="80%" />
   <br>
-  <em>Difference to when training on raw dataset</em>
+  <em>Reproduced: Difference to when training on raw dataset</em>
+</p>
+
+<br><br>
+
+### LaDeDa
+
+<p align="center">
+  <img src="results/LaDeDa_constrained.png" width="80%" />
+  <br>
+  <em> Cross-Generator Performance when training LaDeDa on constrained dataset</em>
+</p>
+
+<br>
+
+<p align="center">
+  <img src="results/LaDeDa_constrained_diff_classic.png" width="80%" />
+  <br>
+  <em> Difference to when training on raw dataset</em>
 </p>
