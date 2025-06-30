@@ -2,7 +2,6 @@
 GenImage_download/
 GenImage/
 Realtime/
-results/
 Unchanged/
 
 # Ausgaben & temporäre Dateien
@@ -51,4 +50,13 @@ Swin-T/swin_h100_environment.yml
 Swin-T/swin_new_environment.yml
 Swin-T/validate/
 Swin-T/withNatural/
+
+#RealTime
+RealTime-DeepfakeDetection-in-the-RealWorld/__pycache__/
+RealTime-DeepfakeDetection-in-the-RealWorld/data/__pycache__/
+RealTime-DeepfakeDetection-in-the-RealWorld/networks/__pycache__/
+RealTime-DeepfakeDetection-in-the-RealWorld/options/__pycache__/
+RealTime-DeepfakeDetection-in-the-RealWorld/validate/
+RealTime-DeepfakeDetection-in-the-RealWorld/wandb/
+RealTime-DeepfakeDetection-in-the-RealWorld/withNatural/
 
