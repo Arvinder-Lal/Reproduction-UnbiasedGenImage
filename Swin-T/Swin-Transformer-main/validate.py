@@ -82,6 +82,9 @@ def parse_option():
     ## Deepfake detection specific arguments
     parser.add_argument('--csv_data_path', type=str, help='The path to the CSV file containing all the metadatqaa about the GenImage dataset')
     parser.add_argument('--base_path', type = str, help = 'path where the GenImage directoty is stored')
+    #hinzugefügt
+    parser.add_argument('--generator_trained_on', type=str, default=None, choices=['Midjourney', 'stable_diffusion_v_1_5', 'stable_diffusion_v_1_4', 'wukong', 'ADM', 'VQDM', 'glide', 'BigGAN'],
+                       help='This is used for datset == SIZE so that all genimage subsets are used, except the one trained on')
     parser.add_argument('--dataset', type=str,
                     help='the dataset defines which dataset is used in the dataloader -> One of classic, jpeg96, controlled or define new')
     parser.add_argument('--generator', type=str, choices=['Midjourney', 'stable_diffusion_v_1_5', 'stable_diffusion_v_1_4', 'wukong', 'ADM', 'VQDM', 'glide', 'BigGAN'],
@@ -110,6 +113,16 @@ def parse_option():
     parser.add_argument('--cropmethod', type=str, choices="['center', 'random']", default='center')
     parser.add_argument('--compress_natural', action='store_true', default=False,
                         help=' Whether to also compress the natural images with the given jpeg qf')
+    #hinzugefügt
+    parser.add_argument('--min_width', type=int, default=None,
+                       help='Only nature images in intervall [min_width:max_width, min_height:max_height] are included')
+    parser.add_argument('--max_width', type=int, default=None,
+                       help='Only nature images in intervall [min_width:max_width, min_height:max_height] are included')
+    parser.add_argument('--min_height', type=int, default=None,
+                       help='Only nature images in intervall [min_width:max_width, min_height:max_height] are included')
+    parser.add_argument('--max_height', type=int, default=None,
+                       help='Only nature images in intervall [min_width:max_width, min_height:max_height] are included')
+    parser.add_argument('--min_qf', type=int, default=None, help='Only nature images with qf > min_qf are included')
 
     args, unparsed = parser.parse_known_args()
 

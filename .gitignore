@@ -1,0 +1,54 @@
+# Datensätze & große Ordner
+GenImage_download/
+GenImage/
+Realtime/
+results/
+Unchanged/
+
+# Ausgaben & temporäre Dateien
+*.out
+*.err
+*.zip
+*.tar.gz
+*.h5
+*.pt
+*.ckpt
+
+# Download-Skripte
+download.sh
+download_genimage.py
+
+# Modelle
+ResNet50.zip
+RealTime.zip 
+zih03GrD
+
+# Virtuelle Umgebungen
+venv/
+.env/
+**/RealTime_env/
+**/myEnv2/
+
+.idea/
+**/.idea/
+
+# ResNet50
+ResNet50/.idea/
+ResNet50/pytorch-image-models-0.6.12/compression_JPEG_diff_classic.csv
+ResNet50/pytorch-image-models-0.6.12/compression_JPEG_diff_classic.png
+ResNet50/pytorch-image-models-0.6.12/get-pip.py
+ResNet50/pytorch-image-models-0.6.12/myEnv2/
+ResNet50/pytorch-image-models-0.6.12/validate/
+ResNet50/pytorch-image-models-0.6.12/wandb/
+ResNet50/pytorch-image-models-0.6.12/withNatural/
+
+#Swin-T
+Swin-T/.idea/
+Swin-T/Swin-Transformer-main/kernels/window_process/environment_py310.yml
+Swin-T/Swin-Transformer-main/output/
+Swin-T/Swin-Transformer-main/wandb/
+Swin-T/swin_h100_environment.yml
+Swin-T/swin_new_environment.yml
+Swin-T/validate/
+Swin-T/withNatural/
+

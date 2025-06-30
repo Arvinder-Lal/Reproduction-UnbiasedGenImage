@@ -16,6 +16,8 @@ def resolve_data_config(args, default_cfg={}, model=None, use_test_size=False, v
     if 'chans' in args and args['chans'] is not None:
         in_chans = args['chans']
 
+    _logger.info(f'channels in config: {in_chans}')
+
     input_size = (in_chans, 224, 224)
     if 'input_size' in args and args['input_size'] is not None:
         assert isinstance(args['input_size'], (tuple, list))

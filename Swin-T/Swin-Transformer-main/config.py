@@ -265,9 +265,20 @@ _C.csv_data_path = ""
 _C.base_path = ""
 _C.dataset = ""
 _C.generator = ""
+#hinzugefügt, wegen constrained_JPEG
+_C.generator_trained_on = ""
+_C.min_width = None
+_C.max_width = None
+_C.min_height = None
+_C.max_height = None
 _C.min_size = None
 _C.max_size = None
+
 _C.jpeg_qf = None
+
+#hinzugefügt
+_C.min_qf=None
+
 _C.class_map = "../../class_map.txt"
 _C.balance_train_classes = True
 _C.balance_val_classes = None
@@ -358,6 +369,21 @@ def update_config(config, args):
         config.dataset = args.dataset
     if _check_args('generator'):
         config.generator = args.generator
+
+    # hinzugefügt, wegen constrained_JPEG
+    if _check_args('generator_trained_on'):
+        config.generator_trained_on = args.generator_trained_on
+    if _check_args('min_width'):
+        config.min_width = args.min_width
+    if _check_args('max_width'):
+        config.max_width = args.max_width
+    if _check_args('min_height'):
+        config.min_height = args.min_height
+    if _check_args('max_height'):
+        config.max_height = args.max_height
+    if _check_args('min_qf'):
+        config.min_qf = args.min_qf
+
     if _check_args('min_size'):
         config.min_size = args.min_size
     if _check_args('max_size'):

@@ -19,6 +19,8 @@ import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
+# hinzugefügt
+import wandb
 
 from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 from timm.utils import accuracy, AverageMeter
@@ -67,7 +69,9 @@ def parse_option():
     parser.add_argument('--throughput', action='store_true', help='Test throughput only')
 
     # distributed training
-    parser.add_argument("--local_rank", type=int, required=True, help='local rank for DistributedDataParallel')
+    # parser.add_argument("--local_rank", type=int, required=True, help='local rank for DistributedDataParallel')
+    parser.add_argument("--local_rank", type=int, default=os.environ.get("LOCAL_RANK", 0),
+                        help='local rank for DistributedDataParallel')
 
     # for acceleration
     parser.add_argument('--fused_window_process', action='store_true',
@@ -78,29 +82,32 @@ def parse_option():
                         help='overwrite optimizer if provided, can be adamw/sgd/fused_adam/fused_lamb.')
 
     ## Deepfake detection specific arguments
-    parser.add_argument('--csv_data_path', type=str, help='The path to the CSV file containing all the metadatqaa about the GenImage dataset')
-    parser.add_argument('--base_path', type = str, help = 'path where the GenImage directoty is stored')
+    parser.add_argument('--csv_data_path', type=str,
+                        help='The path to the CSV file containing all the metadatqaa about the GenImage dataset')
+    parser.add_argument('--base_path', type=str, help='path where the GenImage directoty is stored')
     parser.add_argument('--dataset', type=str,
-                    help='the dataset defines which dataset is used in the dataloader -> One of classic, jpeg96, size_constrained or define new')
-    parser.add_argument('--generator', type=str, choices=['Midjourney', 'stable_diffusion_v_1_5', 'stable_diffusion_v_1_4', 'wukong', 'ADM', 'VQDM', 'glide', 'BigGAN'],
-                    help='this is the generator on which the model is trained, so it defines the genimage subset')
+                        help='the dataset defines which dataset is used in the dataloader -> One of classic, jpeg96, size_constrained or define new')
+    parser.add_argument('--generator', type=str,
+                        choices=['Midjourney', 'stable_diffusion_v_1_5', 'stable_diffusion_v_1_4', 'wukong', 'ADM',
+                                 'VQDM', 'glide', 'BigGAN'],
+                        help='this is the generator on which the model is trained, so it defines the genimage subset')
     # If dataset == "size_constrained":
     parser.add_argument('--min_size', type=int, default=None,
-                    help='Only nature images in intervall [min_size, max_size] are included')
+                        help='Only nature images in intervall [min_size, max_size] are included')
     parser.add_argument('--max_size', type=int, default=None,
-                    help='Only nature images in intervall [min_size, max_size] are included')
+                        help='Only nature images in intervall [min_size, max_size] are included')
     parser.add_argument('--jpeg_qf', type=int, default=None,
-                    help='if set, all images are jpeg compressed with this quality factor')
+                        help='if set, all images are jpeg compressed with this quality factor')
     parser.add_argument('--class-map', default='../../class_map.txt', type=str, metavar='FILENAME',
-                    help='path to class to idx mapping file')
+                        help='path to class to idx mapping file')
     parser.add_argument('--balance_train_classes', action='store_true', default=False,
-                    help='whether or not to balance train data so that the class distribution is equal in ai images and nature images \
+                        help='whether or not to balance train data so that the class distribution is equal in ai images and nature images \
                         (number of instances per imagenet class is same in ai images and nature images)')
     parser.add_argument('--balance_val_classes', action='store_true', default=False,
-                    help='whether or not to balance val data so that the class distribution is equal in ai images and nature images \
+                        help='whether or not to balance val data so that the class distribution is equal in ai images and nature images \
                         (number of instances per imagenet class is same in ai images and nature images)')
     parser.add_argument('--sample_qf_ai', action='store_true', default=False,
-                    help='If this is set and jpeg_qf is None, the ai qf is sampled from the distribution of the qf from all natural train images')
+                        help='If this is set and jpeg_qf is None, the ai qf is sampled from the distribution of the qf from all natural train images')
     parser.add_argument('--resize', type=int, default=None,
                         help='if set, all images are first resized to this')
     parser.add_argument('--cropsize', type=int, default=None,
@@ -108,15 +115,15 @@ def parse_option():
     parser.add_argument('--cropmethod', type=str, choices="['center', 'random']", default='center')
     parser.add_argument('--compress_natural', action='store_true', default=False,
                         help=' Whether to also compress the natural images with the given jpeg qf')
-
-
+    # hinzugefügt
+    parser.add_argument('--use_fft', action='store_true', help='Wende FFT-Transformation auf Bilder an')
+    parser.add_argument('--use_wavelet', action='store_true', help='Wende Wavelet-Transformation auf Bilder an')
 
     args, unparsed = parser.parse_known_args()
 
     config = get_config(args)
 
     return args, config
-
 
 def main(config):
     dataset_train, dataset_val, data_loader_train, data_loader_val, mixup_fn = build_loader(config)
@@ -138,10 +145,11 @@ def main(config):
     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[config.LOCAL_RANK], broadcast_buffers=False)
     loss_scaler = NativeScalerWithGradNormCount()
 
+    num_batches = len(data_loader_train)
     if config.TRAIN.ACCUMULATION_STEPS > 1:
-        lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train) // config.TRAIN.ACCUMULATION_STEPS)
+        lr_scheduler = build_scheduler(config, optimizer, num_batches // config.TRAIN.ACCUMULATION_STEPS)
     else:
-        lr_scheduler = build_scheduler(config, optimizer, len(data_loader_train))
+        lr_scheduler = build_scheduler(config, optimizer, num_batches)
 
     if config.AUG.MIXUP > 0.:
         # smoothing is handled with mixup label transform
@@ -195,6 +203,7 @@ def main(config):
         acc1, loss = validate(config, data_loader_val, model)
         log_scores(epoch, acc1, loss, config.OUTPUT)
         logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {acc1:.1f}%")
+
         max_accuracy = max(max_accuracy, acc1)
         logger.info(f'Max accuracy: {max_accuracy:.2f}%')
         summary_csv_file_path = os.path.join(config.OUTPUT, "summary.csv")
@@ -203,7 +212,6 @@ def main(config):
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info('Training time {}'.format(total_time_str))
-
 
 def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mixup_fn, lr_scheduler, loss_scaler):
     model.train()
@@ -261,6 +269,7 @@ def train_one_epoch(config, model, criterion, data_loader, optimizer, epoch, mix
                 f'grad_norm {norm_meter.val:.4f} ({norm_meter.avg:.4f})\t'
                 f'loss_scale {scaler_meter.val:.4f} ({scaler_meter.avg:.4f})\t'
                 f'mem {memory_used:.0f}MB')
+
     epoch_time = time.time() - start
     logger.info(f"EPOCH {epoch} training takes {datetime.timedelta(seconds=int(epoch_time))}")
 
@@ -275,6 +284,7 @@ def validate(config, data_loader, model):
     acc1_meter = AverageMeter()
 
     end = time.time()
+
     for idx, (images, target) in enumerate(data_loader):
         images = images.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
@@ -306,7 +316,7 @@ def validate(config, data_loader, model):
                 f'Acc@1 {acc1_meter.val:.3f} ({acc1_meter.avg:.3f})\t'
                 f'Mem {memory_used:.0f}MB')
     logger.info(f' * Acc@1 {acc1_meter.avg:.3f}')
-        
+
     return acc1_meter.avg, loss_meter.avg
 
 
@@ -329,20 +339,21 @@ def throughput(data_loader, model, logger):
         logger.info(f"batch_size {batch_size} throughput {30 * batch_size / (tic2 - tic1)}")
         return
 
+
 def log_scores(epoch, accuracy, loss, output_path):
     """
     a help function that writes the accuracy in a csv file
     """
     file_path = os.path.join(output_path, "summary.csv")
-    
+
     with open(file_path, mode='a', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
-        
+
         # Write the accuracy data
         csv_writer.writerow([epoch, accuracy, loss])
 
-def update_saved_models(summary_csv_file_path, output_dir_path):
 
+def update_saved_models(summary_csv_file_path, output_dir_path):
     col_names = ["epoch", "accuracy", "loss"]
     df = pd.read_csv(summary_csv_file_path, names=col_names)
     best_epoch_row = df[df['accuracy'] == df['accuracy'].max()]
@@ -352,8 +363,10 @@ def update_saved_models(summary_csv_file_path, output_dir_path):
     last_epoch = df['epoch'].iloc[-1]
 
     # Step 3: Copy the checkpoint files to overwrite target files.
-    best_checkpoint_file = os.path.join(output_dir_path, f'ckpt_epoch_{best_epoch}.pth')  # Adjust the checkpoint naming convention
-    last_checkpoint_file = os.path.join(output_dir_path, f'ckpt_epoch_{last_epoch}.pth')  # Adjust the checkpoint naming convention
+    best_checkpoint_file = os.path.join(output_dir_path,
+                                        f'ckpt_epoch_{best_epoch}.pth')  # Adjust the checkpoint naming convention
+    last_checkpoint_file = os.path.join(output_dir_path,
+                                        f'ckpt_epoch_{last_epoch}.pth')  # Adjust the checkpoint naming convention
 
     if config.LOCAL_RANK == 0:
         print("saving the last model in last.pth...")

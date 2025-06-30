@@ -350,6 +350,10 @@ group.add_argument('--use-multi-epochs-loader', action='store_true', default=Fal
                     help='use the multi-epochs-loader to save time at the beginning of every epoch')
 group.add_argument('--log-wandb', action='store_true', default=False,
                     help='log training and validation metrics to wandb')
+#hinzugefügt
+parser.add_argument('--use_fft', action='store_true', default=False, help='Wende FFT-Transformation auf Bilder an')
+parser.add_argument('--use_wavelet', action='store_true', default=False)
+parser.add_argument('--wildrf', action='store_true', default=False)
 
 
 def _parse_args():
@@ -440,6 +444,7 @@ def main():
         bn_eps=args.bn_eps,
         scriptable=args.torchscript,
         checkpoint_path=args.initial_checkpoint)
+
     if args.num_classes is None:
         assert hasattr(model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
         args.num_classes = model.num_classes  # FIXME handle model default vs config num_classes more elegantly

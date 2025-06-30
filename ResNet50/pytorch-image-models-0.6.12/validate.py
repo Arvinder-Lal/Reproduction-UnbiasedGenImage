@@ -51,6 +51,9 @@ from get_data import get_data
 from get_transform import get_transform
 from create_dataset import create_dataset
 
+#hinzugefügt
+import numpy as np
+
 torch.backends.cudnn.benchmark = True
 _logger = logging.getLogger('validate')
 
@@ -75,6 +78,10 @@ group.add_argument('--class-map', default='../../class_map.txt', type=str, metav
 group.add_argument('--balance_val_classes', action='store_true', default=False,
                     help='whether or not to balance val data so that the class distribution is equal in ai images and nature images \
                         (number of instances per imagenet class is same in ai images and nature images)')
+
+#hinzugefügt: if dataset == WildRF
+group.add_argument('--platform', type=str, default=None, choices=['facebook', 'twitter', 'reddit'],
+                    help='this is the platform on which the images where collected to form the dataset on which the detector is evaluated, so it defines the genimage subset')
                         
 # If dataset == "SIZE":
 group.add_argument('--min_width', type=int, default=None,
@@ -400,6 +407,7 @@ def validate(args):
                         loss=losses, top1=top1, top5=top5))
         total_confusion_matrix = total_confusion_matrix / total_confusion_matrix.sum()
         all_preds, all_labels = torch.cat(all_preds).cpu().numpy().reshape(-1), torch.cat(all_labels).cpu().numpy()
+
         try:
             AUC = roc_auc_score(all_labels, all_preds)
         except ValueError as e: 
@@ -463,7 +471,9 @@ def main():
     # Check if args are correct:
     if args.dataset.lower() == "SIZE".lower():
         assert args.min_width and args.max_width and args.min_height and args.max_height and args.generator_trained_on
-    if args.dataset.lower() not in ["SIZE".lower(), "FFHQ_JPEG".lower()]:
+    #hinzugefügt
+    if args.dataset.lower() not in ["SIZE".lower(), "FFHQ_JPEG".lower(), 'wildrf']:
+    #if args.dataset.lower() not in ["SIZE".lower(), "FFHQ_JPEG".lower()]:
         assert args.generator
     
     

@@ -44,7 +44,9 @@ def clean_state_dict(state_dict):
 
 def load_state_dict(checkpoint_path, use_ema=True):
     if checkpoint_path and os.path.isfile(checkpoint_path):
-        checkpoint = torch.load(checkpoint_path, map_location='cpu')
+#        checkpoint = torch.load(checkpoint_path, map_location='cpu')
+        #hinzugefügt, wegen den errors (ADM, s4, Midjourney, unbiased)
+        checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
         state_dict_key = ''
         if isinstance(checkpoint, dict):
             if use_ema and checkpoint.get('state_dict_ema', None) is not None:
@@ -79,7 +81,9 @@ def load_checkpoint(model, checkpoint_path, use_ema=True, strict=True):
 def resume_checkpoint(model, checkpoint_path, optimizer=None, loss_scaler=None, log_info=True):
     resume_epoch = None
     if os.path.isfile(checkpoint_path):
-        checkpoint = torch.load(checkpoint_path, map_location='cpu')
+#        checkpoint = torch.load(checkpoint_path, map_location='cpu')
+        #hinzugefügt, wegen den errors (ADM, s4, Midjourney, unbiased)
+        checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
         if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
             if log_info:
                 _logger.info('Restoring model state from checkpoint...')
