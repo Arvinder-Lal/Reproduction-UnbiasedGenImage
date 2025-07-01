@@ -17,8 +17,6 @@ class Trainer(BaseModel):
             self.model.fc = nn.Linear(2048, 1)
             torch.nn.init.normal_(self.model.fc.weight.data, 0.0, opt.init_gain)
         if not self.isTrain or opt.continue_train:
-#            self.model = LaDeDa9(pretrained=False, num_classes=1)
-             #geändert weil pretrained=False ein TypeError: __init__() got an unexpected keyword argument 'pretrained' auslöst
           self.model = LaDeDa9(num_classes=1)
 
 

@@ -42,10 +42,10 @@ class FFTTransform:
 
         return Image.fromarray(magnitude_spectrum).convert("RGB")
 
-
+# hinzugefügt
 import pywt
 import torch
-class OldWaveletTransform:
+class WaveletTransform:
     def __init__(self, wavelet='haar', level=3, mode='symmetric', normalize=True):
         self.wavelet = wavelet
         self.level = level
@@ -77,69 +77,6 @@ class OldWaveletTransform:
                 result = torch.cat(result_channels, dim=0)
 
         return TF.to_pil_image(result)
-
-import pywt
-import numpy as np
-import torch
-from torchvision.transforms.functional import to_tensor, to_pil_image
-
-
-class WaveletTransform:
-    def __init__(self, wavelet='haar', level=3, apply_log=True):
-        self.wavelet = wavelet
-        self.level = level
-        self.apply_log = apply_log
-
-    def __call__(self, img):
-        img_tensor = to_tensor(img)  # [3, H, W]
-        wavelet_channels = []
-
-        for c in range(img_tensor.shape[0]):
-            channel_np = img_tensor[c].numpy()
-            coeffs = pywt.wavedec2(channel_np, self.wavelet, level=self.level)
-
-            LL = coeffs[0]
-            details = coeffs[1:]
-
-            # Calculate output dimensions based on LL shape
-            out_h, out_w = LL.shape[0], LL.shape[1]
-
-            # Create combined array with correct dimensions
-            combined = np.zeros((out_h * (self.level + 1), out_w * 3))  # *3 for H,V,D components
-
-            # Place LL coefficients (no longer scaling by 2)
-            combined[0:out_h, 0:out_w] = np.interp(LL, (LL.min(), LL.max()), (0, 1))
-
-            for i, detail in enumerate(details):
-                cH, cV, cD = detail
-                base_y = out_h * (i + 1)
-
-                # Normalize each component
-                cH = np.interp(cH, (cH.min(), cH.max()), (0, 1))
-                cV = np.interp(cV, (cV.min(), cV.max()), (0, 1))
-                cD = np.interp(cD, (cD.min(), cD.max()), (0, 1))
-
-                combined[base_y:base_y + out_h, 0:out_w] = cH
-                combined[base_y:base_y + out_h, out_w:2 * out_w] = cV
-                combined[base_y:base_y + out_h, 2 * out_w:3 * out_w] = cD
-
-            if self.apply_log:
-                combined = np.log(combined + 1e-6)
-
-            wavelet_channels.append(combined)
-
-        max_h = max(ch.shape[0] for ch in wavelet_channels)
-        max_w = max(ch.shape[1] for ch in wavelet_channels)
-
-        stacked = np.stack([
-            np.resize(ch, (max_h, max_w)) for ch in wavelet_channels
-        ], axis=-1)
-
-        stacked = (stacked - stacked.min()) / (stacked.max() - stacked.min() + 1e-9)
-        stacked = (stacked * 255).astype(np.uint8)
-
-        return Image.fromarray(stacked)
-
 
 def dataset_folder(opt, root):
     if opt.mode == 'binary':
